@@ -2,17 +2,20 @@ const products = [
     {
         id:'1',
         nombre:'producto1',
-        precio: 1000
+        precio: 1000,
+        stock:15
     },
     {
         id:'2',
         nombre:'producto2',
-        precio: 2000
+        precio: 2000,
+        stock: 20
     },
     {
         id:'3',
         nombre:'producto3',
-        precio: 3000
+        precio: 3000,
+        stock: 30
     },
 ];
 
@@ -44,8 +47,6 @@ const deleteItem = (idDelProducto) => {
     localStorage.setItem('carrito', JSON.stringify(carrito));
     renderProductsInCart(nuevoCarrito, '.cart');
 
-    console.log(carrito);
-
     if(carrito.length === 0) {
         document.querySelector('.cart').innerHTML = '<h2>No hay productos :(</h2>'
     }
@@ -62,6 +63,7 @@ const renderProductsInCart = (arrayDeProductos, elemento) => {
             <article>
                 <p>${articulo.nombre}</p>
                 <span>${articulo.precio}$</span>
+                <p>Cantidad: ${articulo.cantidad ? articulo.cantidad : '1'}</p>
                 <button class="btn-borrar" onclick="deleteItem('${articulo.id}')">X</button>
             </article>
         `;
@@ -70,13 +72,32 @@ const renderProductsInCart = (arrayDeProductos, elemento) => {
     cartDiv.innerHTML = html;
 }
 
+const isInCart = (productId) => carrito.find(prod => prod.id === productId);
+
 const addToCart = (evento) => {
     const idDelProducto = evento.target.value;
     //console.log(idDelProducto);
 
+    //Buscamos si existe en el carrito
+    const prodIsInCart = isInCart(idDelProducto);
+    
+    if(prodIsInCart) {
+        //Buscamos el producto en el carrito para modificarlo
+        const indexDelProd = carrito.findIndex(prod => prod.id === prodIsInCart.id);
+        if(carrito[indexDelProd].cantidad <= prodIsInCart.stock) {
+            carrito[indexDelProd].cantidad++;
+        } else {
+            alert('No podes agregar mas master!');
+            carrito[indexDelProd].cantidad = prodIsInCart.stock;
+        }
+        carrito = [...carrito];
+        renderProductsInCart(carrito, '.cart');
+        return;
+    }
+
     const productoEnBaseDeDatos = products.find(producto => producto.id === idDelProducto);
     //console.log(productoEnBaseDeDatos);
-
+    productoEnBaseDeDatos.cantidad = 1;
     carrito.push(productoEnBaseDeDatos);
     localStorage.setItem('carrito', JSON.stringify(carrito));
     renderProductsInCart(carrito,'.cart');
@@ -112,8 +133,6 @@ class Perro extends Animal {
 
 const animal1 = new Perro('perro', true);
 
-console.log(animal1);
-
 const animales = [];
 
 for (let index = 0; index < 10; index++) {
@@ -121,7 +140,5 @@ for (let index = 0; index < 10; index++) {
     animales.push(animal)
 }
 
-console.log(animales)
 
 const perro3 = animales.find(animal => animal.especie === 'perro3');
-console.log(perro3)
